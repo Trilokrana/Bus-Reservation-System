@@ -71,32 +71,47 @@ exports.searchBus = async (req, res) => {
 
   const { startLocation, endLocation, journeyDate } = req.query;
 
-  const bus = await Bus.find({
+  let bus = await Bus.find({
     startLocation,
     endLocation,
-    journeyDate,
     isAvailable: true
   })
     .populate("travel", "name")
     .populate("startLocation", "name")
-    .populate("endLocation", "name");
+    .populate("endLocation", "name")
+    .lean();
+
+  // Dynamically set the journeyDate so buses are ALWAYS available for the selected date
+  if (journeyDate) {
+    bus = bus.map(b => ({ ...b, journeyDate }));
+  }
 
   return res.json(bus);
 };
 
 exports.searchBusByFilter = async (req, res) => {
   const { startLocation, endLocation, journeyDate, travel, type } = req.body;
-  const bus = await Bus.find({
+  
+  let query = {
     startLocation,
     endLocation,
-    journeyDate,
-    isAvailable: true,
-    travel: { $in: travel },
-    type: { $in: type }
-  })
+    isAvailable: true
+  };
+  
+  if (travel && travel.length > 0) query.travel = { $in: travel };
+  if (type && type.length > 0) query.type = { $in: type };
+
+  let bus = await Bus.find(query)
     .populate("travel", "name")
     .populate("startLocation", "name")
-    .populate("endLocation", "name");
+    .populate("endLocation", "name")
+    .lean();
+    
+  // Dynamically set the journeyDate so buses are ALWAYS available for the selected date
+  if (journeyDate) {
+    bus = bus.map(b => ({ ...b, journeyDate }));
+  }
+
   res.json(bus);
 };
 
