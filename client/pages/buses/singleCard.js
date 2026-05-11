@@ -98,9 +98,10 @@ class SingleCard extends React.Component {
           <Row>
             <Col span={3}>
               <img
-                src={`${API_ROOT}/uploads/${bus.image}`}
-                alt="suspense"
+                src={bus.image && bus.image.startsWith('http') ? bus.image : (bus.image ? `${API_ROOT}/uploads/${bus.image}` : 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&q=80&w=200')}
+                alt="bus"
                 className="bus-thumbnail"
+                style={{ objectFit: 'cover', borderRadius: '4px', width: '100%', height: '60px' }}
               />
             </Col>
             <Col span={1}></Col>
